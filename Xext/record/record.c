@@ -298,7 +298,6 @@ RecordAProtocolElement(RecordContextPtr pContext, ClientPtr pClient,
      * Do not deliver keyboard input data.
      * Affects both 'device_events' and 'delivered_events' ranges,
      * which could be used to listen keyboard input events.
-     * Needed to prevent keylogging.
      */
     if (globalIsolateKeyboard) {
         if (data) {

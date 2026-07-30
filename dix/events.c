@@ -2848,7 +2848,6 @@ DeliverOneEvent(InternalEvent *event, DeviceIntPtr dev, enum InputLevel level,
     /*
      * Deliver keyboard events only if client is focused.
      * Even if it does not have a window, that means unfocused.
-     * Needed to prevent keylogging.
      */
     if (globalIsolateKeyboard) {
         WindowPtr focus = inputInfo.keyboard->focus->win;
