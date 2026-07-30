@@ -4242,7 +4242,7 @@ DeliverFocusedEvent(DeviceIntPtr keybd, InternalEvent *event, WindowPtr window)
     int deliveries = 0;
 
     /*
-     * Do not delivery keyboard input events to the root window,
+     * Do not deliver keyboard input events to the root window,
      * because that makes CLI clients see input when user is focused
      * on completely blank desktop, i.e. on root window, which points
      * at Xorg process. Some DEs/WMs put window on top of root window,

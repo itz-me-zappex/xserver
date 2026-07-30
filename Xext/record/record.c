@@ -294,6 +294,25 @@ RecordAProtocolElement(RecordContextPtr pContext, ClientPtr pClient,
     Bool gotServerTime = FALSE;
     int replylen;
 
+    /*
+     * Do not deliver keyboard input data.
+     * Affects both 'device_events' and 'delivered_events' ranges,
+     * which could be used to listen keyboard input events.
+     * Needed to prevent keylogging.
+     */
+    if (globalIsolateKeyboard) {
+        if (data) {
+            xEvent *pev = (void *) data;
+            switch (pev->u.u.type) {
+            case KeyPress:
+            case KeyRelease:
+                return;
+            default:
+                break;
+            }
+        }
+    }
+
     if (futurelen >= 0) {       /* start of new protocol element */
         xRecordEnableContextReply *pRep = (xRecordEnableContextReply *)
             pContext->replyBuffer;
@@ -681,15 +700,15 @@ RecordADeliveredEventOrError(CallbackListPtr *pcbl, void *nulldata,
                 int recordit = 0;
 
                 // this part is here to deny 'delivered_events' range
-                if (globalIsolateKeyboard) {
-                    switch (pev->u.u.type) {
-                    case KeyPress:
-                    case KeyRelease:
-                        continue;
-                    default:
-                        break;
-                    }
-                }
+                // if (globalIsolateKeyboard) {
+                //     switch (pev->u.u.type) {
+                //     case KeyPress:
+                //     case KeyRelease:
+                //         continue;
+                //     default:
+                //         break;
+                //     }
+                // }
 
                 if (pRCAP->pErrorSet) {
                     recordit = RecordIsMemberOfSet(pRCAP->pErrorSet,
@@ -733,15 +752,15 @@ RecordSendProtocolEvents(RecordClientsAndProtocolPtr pRCAP,
             // just in case as this function is called in RecordADeviceEvent()
             // so potentially it could be called somewhere else later during development,
             // bypassing this check
-            if (globalIsolateKeyboard) {
-                switch (pev->u.u.type) {
-                case KeyPress:
-                case KeyRelease:
-                    continue;
-                default:
-                    break;
-                }
-            }
+            // if (globalIsolateKeyboard) {
+            //     switch (pev->u.u.type) {
+            //     case KeyPress:
+            //     case KeyRelease:
+            //         continue;
+            //     default:
+            //         break;
+            //     }
+            // }
 
 #ifdef XINERAMA
             xEvent shiftedEvent;
@@ -805,15 +824,15 @@ RecordADeviceEvent(CallbackListPtr *pcbl, void *nulldata, void *calldata)
 
     // this part is here to deny 'device_events' range
     // todo: test with it disabled
-    if (globalIsolateKeyboard) {
-        switch (pei->event->any.type) {
-        case ET_KeyPress:
-        case ET_KeyRelease:
-            return;
-        default:
-            break;
-        }
-    }
+    // if (globalIsolateKeyboard) {
+    //     switch (pei->event->any.type) {
+    //     case ET_KeyPress:
+    //     case ET_KeyRelease:
+    //         return;
+    //     default:
+    //         break;
+    //     }
+    // }
 
     for (eci = 0; eci < numEnabledContexts; eci++) {
         pContext = ppAllContexts[eci];
