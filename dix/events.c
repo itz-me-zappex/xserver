@@ -4247,6 +4247,7 @@ DeliverFocusedEvent(DeviceIntPtr keybd, InternalEvent *event, WindowPtr window)
      * at Xorg process. Some DEs/WMs put window on top of root window,
      * so this is not an issue there, but an issue everywhere else.
      */
+    // TODO: PREVENTS KEYBOARD INPUT IF THERE IS NO CURSOR ON TOP OF WINDOW
     if (globalIsolateKeyboard) {
         if (window->drawable.id == window->drawable.pScreen->root->drawable.id) {
             switch (event->any.type) {
