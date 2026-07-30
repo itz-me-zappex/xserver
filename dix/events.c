@@ -2491,6 +2491,21 @@ DeliverRawEvent(RawDeviceEvent *ev, DeviceIntPtr device)
     if (grab)
         DeliverGrabbedEvent((InternalEvent *) ev, device, FALSE);
 
+    /*
+     * To prevent keylogging, not grabbed raw keyboard event
+     * should not be sent to any client.
+     */
+    if (globalIsolateKeyboard) {
+        switch (ev->type) {
+        case ET_RawKeyPress:
+        case ET_RawKeyRelease:
+            free(xi);
+            return;
+        default:
+            break;
+        }
+    }
+
     filter = GetEventFilter(device, xi);
 
     DIX_FOR_EACH_SCREEN({
@@ -2830,6 +2845,25 @@ static int
 DeliverOneEvent(InternalEvent *event, DeviceIntPtr dev, enum InputLevel level,
                 WindowPtr win, Window child, GrabPtr grab)
 {
+    /*
+     * Deliver keyboard events only if client is focused.
+     * Even if it does not have a window, that means unfocused.
+     * Needed to prevent keylogging.
+     */
+    if (globalIsolateKeyboard) {
+        WindowPtr focus = inputInfo.keyboard->focus->win;
+
+        if (win->drawable.id != focus->drawable.id) {
+            switch (event->any.type) {
+            case KeyPress:
+            case KeyRelease:
+                return 0;
+            default:
+                break;
+            }
+        }
+    }
+
     xEvent *xE = NULL;
     int count = 0;
     int deliveries = 0;
@@ -4206,6 +4240,25 @@ DeliverFocusedEvent(DeviceIntPtr keybd, InternalEvent *event, WindowPtr window)
     xEvent *core = NULL, *xE = NULL, *xi2 = NULL;
     int count, rc;
     int deliveries = 0;
+
+    /*
+     * Do not delivery keyboard input events to the root window,
+     * because that makes CLI clients see input when user is focused
+     * on completely blank desktop, i.e. on root window, which points
+     * at Xorg process. Some DEs/WMs put window on top of root window,
+     * so this is not an issue there, but an issue everywhere else.
+     */
+    if (globalIsolateKeyboard) {
+        if (window->drawable.id == window->drawable.pScreen->root->drawable.id) {
+            switch (event->any.type) {
+            case KeyPress:
+            case KeyRelease:
+                return;
+            default:
+                break;
+            }
+        }
+    }
 
     if (focus == FollowKeyboardWin)
         focus = inputInfo.keyboard->focus->win;

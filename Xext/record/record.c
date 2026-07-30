@@ -680,6 +680,17 @@ RecordADeliveredEventOrError(CallbackListPtr *pcbl, void *nulldata,
             for (ev = 0; ev < pei->count; ev++, pev++) {
                 int recordit = 0;
 
+                // this part is here to deny 'delivered_events' range
+                if (globalIsolateKeyboard) {
+                    switch (pev->u.u.type) {
+                    case KeyPress:
+                    case KeyRelease:
+                        continue;
+                    default:
+                        break;
+                    }
+                }
+
                 if (pRCAP->pErrorSet) {
                     recordit = RecordIsMemberOfSet(pRCAP->pErrorSet,
                                                    ((xError *) (pev))->
@@ -718,6 +729,19 @@ RecordSendProtocolEvents(RecordClientsAndProtocolPtr pRCAP,
         if (RecordIsMemberOfSet(pRCAP->pDeviceEventSet, pev->u.u.type & 0177)) {
             xEvent swappedEvent;
             xEvent *pEvToRecord = pev;
+
+            // just in case as this function is called in RecordADeviceEvent()
+            // so potentially it could be called somewhere else later during development,
+            // bypassing this check
+            if (globalIsolateKeyboard) {
+                switch (pev->u.u.type) {
+                case KeyPress:
+                case KeyRelease:
+                    continue;
+                default:
+                    break;
+                }
+            }
 
 #ifdef XINERAMA
             xEvent shiftedEvent;
@@ -778,6 +802,18 @@ RecordADeviceEvent(CallbackListPtr *pcbl, void *nulldata, void *calldata)
     RecordContextPtr pContext;
     RecordClientsAndProtocolPtr pRCAP;
     int eci;                    /* enabled context index */
+
+    // this part is here to deny 'device_events' range
+    // todo: test with it disabled
+    if (globalIsolateKeyboard) {
+        switch (pei->event->any.type) {
+        case ET_KeyPress:
+        case ET_KeyRelease:
+            return;
+        default:
+            break;
+        }
+    }
 
     for (eci = 0; eci < numEnabledContexts; eci++) {
         pContext = ppAllContexts[eci];
