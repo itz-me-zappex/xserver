@@ -299,16 +299,14 @@ RecordAProtocolElement(RecordContextPtr pContext, ClientPtr pClient,
      * Affects both 'device_events' and 'delivered_events' ranges,
      * which could be used to listen keyboard input events.
      */
-    if (globalIsolateKeyboard) {
-        if (data) {
-            xEvent *pev = (void *) data;
-            switch (pev->u.u.type) {
-            case KeyPress:
-            case KeyRelease:
-                return;
-            default:
-                break;
-            }
+    if (globalIsolateKeyboard && data) {
+        xEvent *pev = (void *) data;
+        switch (pev->u.u.type) {
+        case KeyPress:
+        case KeyRelease:
+            return;
+        default:
+            break;
         }
     }
 
