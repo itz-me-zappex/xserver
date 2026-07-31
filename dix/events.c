@@ -4240,6 +4240,17 @@ DeliverFocusedEvent(DeviceIntPtr keybd, InternalEvent *event, WindowPtr window)
     int count, rc;
     int deliveries = 0;
 
+    /* 
+     * With keyboard isolation, we need to access XID of both focused and
+     * root windows.
+     * Accessing stuff inside 'keybd->focus->win' causes segfault, but
+     * everything is fine in case with 'inputInfo.keyboard->focus->win'.
+     */
+    if (focus == FollowKeyboardWin || globalIsolateKeyboard)
+        focus = inputInfo.keyboard->focus->win;
+    if (!focus)
+        return;
+
     /*
      * Do not deliver keyboard input events to the root window,
      * because that makes CLI clients see input when user is focused
@@ -4247,9 +4258,8 @@ DeliverFocusedEvent(DeviceIntPtr keybd, InternalEvent *event, WindowPtr window)
      * at Xorg process. Some DEs/WMs put window on top of root window,
      * so this is not an issue there, but an issue everywhere else.
      */
-    // TODO: PREVENTS KEYBOARD INPUT IF THERE IS NO CURSOR ON TOP OF WINDOW
     if (globalIsolateKeyboard) {
-        if (window->drawable.id == window->drawable.pScreen->root->drawable.id) {
+        if (focus->drawable.id == focus->drawable.pScreen->root->drawable.id) {
             switch (event->any.type) {
             case KeyPress:
             case KeyRelease:
@@ -4260,10 +4270,6 @@ DeliverFocusedEvent(DeviceIntPtr keybd, InternalEvent *event, WindowPtr window)
         }
     }
 
-    if (focus == FollowKeyboardWin)
-        focus = inputInfo.keyboard->focus->win;
-    if (!focus)
-        return;
     if (focus == PointerRootWin) {
         DeliverDeviceEvents(window, event, NullGrab, NullWindow, keybd);
         return;
