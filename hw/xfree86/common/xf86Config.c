@@ -654,6 +654,7 @@ typedef enum {
     FLAG_ALLOW_BYTE_SWAPPED_CLIENTS,
     FLAG_SINGLE_DRIVER,
     FLAG_ISOLATE_KEYBOARD,
+    FLAG_NO_KEYBOARD_INJECTION,
 } FlagValues;
 
 /**
@@ -718,6 +719,8 @@ static OptionInfoRec FlagOptions[] = {
     {FLAG_SINGLE_DRIVER, "SingleDriver", OPTV_BOOLEAN,
      {0}, FALSE},
     {FLAG_ISOLATE_KEYBOARD, "IsolateKeyboard", OPTV_BOOLEAN,
+     {0}, FALSE},
+    {FLAG_NO_KEYBOARD_INJECTION, "NoKeyboardInjection", OPTV_BOOLEAN,
      {0}, FALSE},
     {-1, NULL, OPTV_NONE,
      {0}, FALSE},
@@ -836,6 +839,16 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     }
     LogMessageVerb(from, 1, "Keyboard isolation is turned %s\n",
                    globalIsolateKeyboard ? "on" : "off");
+
+    if (xf86IsOptionSet(FlagOptions, FLAG_NO_KEYBOARD_INJECTION)) {
+        xf86GetOptValBool(FlagOptions, FLAG_NO_KEYBOARD_INJECTION,
+                          &globalNoKeyboardInjection);
+        from = X_CONFIG;
+    } else {
+        from = X_DEFAULT;
+    }
+    LogMessageVerb(from, 1, "Keyboard input injection is %s\n",
+                   globalNoKeyboardInjection ? "disallowed" : "allowed");
 
     /*
      * Set things up based on the config file information.  Some of these

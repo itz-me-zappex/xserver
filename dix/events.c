@@ -5589,6 +5589,24 @@ ProcSendEvent(ClientPtr client)
         return BadValue;
     }
 
+    /*
+     * To prevent software that could potentially grab keyboard
+     * and log keystrokes from forwarding SYNTHETIC keyboard
+     * input events to clients.
+     *
+     * Most of graphical applications just ignore such events
+     * anyway, but still not all of them.
+     */
+    if (globalNoKeyboardInjection) {
+        switch (stuff->event.u.u.type) {
+        case KeyPress:
+        case KeyRelease:
+            return Success;
+        default:
+            break;
+        }
+    }
+
     if (stuff->destination == PointerWindow)
         pWin = pSprite->win;
     else if (stuff->destination == InputFocus) {

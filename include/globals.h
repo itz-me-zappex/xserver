@@ -11,5 +11,6 @@ extern _X_EXPORT int monitorResolution;
 extern _X_EXPORT int defaultColorVisualClass;
 
 extern Bool globalIsolateKeyboard;
+extern Bool globalNoKeyboardInjection;
 
 #endif                          /* !_XSERV_GLOBAL_H_ */

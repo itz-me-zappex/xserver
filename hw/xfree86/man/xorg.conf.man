@@ -700,6 +700,16 @@ clients that are either unfocused or do not own the window. Disallows
 listening keyboard input events through RECORD extension. As a result,
 prevents common keylogging methods that depend on X server features.
 Disabled by default.
+.TP 7
+.BI "Option \*qNoKeyboardInjection\*q \*q" boolean \*q
+Disallows injection of synthetic or emulated keyboard input events utilizing
+X server features. Prevents clients from sending fake keyboard input using
+the "XSendEvent()" (or similar function) and the XTEST extension. As a result,
+prevents software that could potentially grab keyboard and log keystrokes from
+forwarding synthetic/emulated keyboard input events to clients, making the
+interception not noticeable. Breaks On-Screen keyboards and keyboard input
+automation tools.
+Disabled by default.
 .SH "MODULE SECTION"
 The
 .B Module

@@ -299,6 +299,7 @@ UseMsg(void)
 #endif /* CONFIG_NAMESPACE */
     LockServerUseMsg();
     ErrorF("-maxclients n          set maximum number of clients (power of two)\n");
+    ErrorF("-nokeyboardinjection   Prevent keyboard input injection\n");
     ErrorF("-nolisten string       don't listen on protocol\n");
     ErrorF("-listen string         listen on protocol\n");
     ErrorF("-background [none]     create root window with no background\n");
@@ -590,6 +591,9 @@ ProcessCommandLine(int argc, char *argv[])
                 }
             } else
                 UseMsg();
+        }
+        else if (strcmp(argv[i], "-nokeyboardinjection") == 0) {
+            globalNoKeyboardInjection = TRUE;
         }
         else if (strcmp(argv[i], "-nolisten") == 0) {
             if (++i < argc) {

@@ -65,6 +65,7 @@
 #include "mipointer.h"
 #include "xserver-properties.h"
 #include "eventstr.h"
+#include "globals.h"
 
 Bool noTestExtensions = FALSE;
 
@@ -203,6 +204,36 @@ ProcXTestFakeInput(ClientPtr client)
     UpdateCurrentTime();
     ev = (xEvent *) &((xReq *) stuff)[1];
     type = ev->u.u.type & 0177;
+
+    /*
+     * To prevent software that could potentially grab keyboard
+     * and log keystrokes from forwarding EMULATED keyboard
+     * input events to clients.
+     *
+     * If set to 'true', because of this part, On-Screen keyboards
+     * and keyboard input automation tools will neither work as
+     * expected nor crash.
+     */
+    if (globalNoKeyboardInjection) {
+        if (type >= EXTENSION_EVENT_BASE) {
+            switch (type) {
+            case XI_DeviceKeyPress:
+            case XI_DeviceKeyRelease:
+                return Success;
+            default:
+                break;
+            }
+        }
+        else {
+            switch (type) {
+            case KeyPress:
+            case KeyRelease:
+                return Success;
+            default:
+                break;
+            }
+        }
+    }
 
     if (type >= EXTENSION_EVENT_BASE) {
         extension = TRUE;

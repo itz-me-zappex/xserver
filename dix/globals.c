@@ -124,3 +124,4 @@ Bool explicit_display = FALSE;
 char *ConnectionInfo;
 
 Bool globalIsolateKeyboard = FALSE;
+Bool globalNoKeyboardInjection = FALSE;
